@@ -1,0 +1,1 @@
+import{x as t}from"./index-BgeKvwcP.js";const e=()=>t({url:"/api/avatar-shop",method:"get"}),p=a=>t({url:`/api/avatar-shop/${a}/purchase`,method:"post"}),o=a=>t({url:`/api/avatar-shop/${a}/equip`,method:"post"});export{o as e,e as g,p};

@@ -1,0 +1,1 @@
+import{E as o}from"./index-DwZhLOow.js";const i=(s={})=>({...s,customClass:["admin-msg",s.customClass].filter(Boolean).join(" ")}),r=s=>(n,t)=>{const a=typeof n=="string"||typeof n=="function"?{message:n}:{...n};return s(i({...a,...t}))},e={success:r(s=>o.success(s)),warning:r(s=>o.warning(s)),info:r(s=>o.info(s)),error:r(s=>o.error(s))};export{e as a};

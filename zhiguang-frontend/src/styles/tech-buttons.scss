@@ -1,0 +1,350 @@
+/* ============================================================
+   主站主按钮 — 深色科技风
+   电光蓝→紫渐变发光描边 · 深灰蓝玻璃底 · 胶囊形
+   仅作用于主站；后台通过 `.admin-layout` / `.admin-dialog` 的更高优先级覆盖
+   ============================================================ */
+
+$tech-border: linear-gradient(100deg, #22d3ee 0%, #3b82f6 34%, #8b5cf6 68%, #e879f9 100%);
+$tech-fill: linear-gradient(180deg, rgba(24, 33, 54, 0.82) 0%, rgba(11, 18, 33, 0.88) 100%);
+$tech-fill-hover: linear-gradient(180deg, rgba(33, 45, 71, 0.86) 0%, rgba(15, 24, 43, 0.9) 100%);
+$tech-glow: 0 0 0 1px rgba(59, 130, 246, 0.16), 0 10px 28px rgba(37, 99, 235, 0.26),
+  0 0 22px rgba(139, 92, 246, 0.2);
+$tech-glow-hover: 0 0 0 1px rgba(96, 165, 250, 0.28), 0 16px 38px rgba(37, 99, 235, 0.38),
+  0 0 34px rgba(168, 85, 247, 0.36);
+
+%tech-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 46px;
+  padding: 0 54px 0 40px;
+  border-radius: 999px;
+  border: 1.6px solid transparent;
+  background:
+    $tech-fill padding-box,
+    $tech-border border-box;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  cursor: pointer;
+  isolation: isolate;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: $tech-glow;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), filter 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease;
+
+  /* 左侧状态指示点 */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    margin-top: -3px;
+    border-radius: 50%;
+    background: #7dd3fc;
+    box-shadow: 0 0 9px 2px rgba(125, 211, 252, 0.85);
+    animation: tech-dot-pulse 2.6s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  /* 右侧独立圆角图标区 */
+  &::after {
+    content: '';
+    position: absolute;
+    right: 7px;
+    top: 50%;
+    width: 30px;
+    height: 30px;
+    margin-top: -15px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17 17 7'/%3E%3Cpath d='M8 7h9v9'/%3E%3C/svg%3E")
+        center / 13px 13px no-repeat,
+      rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    pointer-events: none;
+  }
+
+  > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* 文字右侧的箭头 */
+  > span::after {
+    content: '↗';
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1;
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+
+  &:hover:not(:disabled):not(.is-disabled) {
+    background:
+      $tech-fill-hover padding-box,
+      $tech-border border-box;
+    filter: brightness(1.2);
+    box-shadow: $tech-glow-hover;
+    transform: translateY(-2px);
+
+    &::after {
+      background-color: rgba(255, 255, 255, 0.16);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 0 14px rgba(147, 197, 253, 0.5);
+    }
+  }
+
+  &:active:not(:disabled):not(.is-disabled) {
+    transform: translateY(0);
+    filter: brightness(1.05);
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2), 0 6px 16px rgba(37, 99, 235, 0.28);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: $tech-glow-hover, 0 0 0 3px rgba(96, 165, 250, 0.35);
+  }
+
+  &:disabled,
+  &.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: saturate(0.8);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
+    transform: none;
+
+    &::before {
+      animation: none;
+      opacity: 0.6;
+    }
+  }
+}
+
+@keyframes tech-dot-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    box-shadow: 0 0 7px 1px rgba(125, 211, 252, 0.7);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 12px 3px rgba(125, 211, 252, 0.95);
+  }
+}
+
+/* ============================================================
+   Element Plus 主按钮
+   :where() 不参与优先级，保证后台的 `.admin-layout .el-button--primary` 仍能覆盖
+   ============================================================ */
+.el-button--primary:where(:not(.is-link, .is-text, .is-plain, .is-circle)) {
+  @extend %tech-primary;
+
+  --el-button-bg-color: transparent;
+  --el-button-border-color: transparent;
+  --el-button-hover-bg-color: transparent;
+  --el-button-hover-border-color: transparent;
+  --el-button-active-bg-color: transparent;
+  --el-button-active-border-color: transparent;
+  --el-button-text-color: #fff;
+  --el-button-hover-text-color: #fff;
+  --el-button-active-text-color: #fff;
+
+  min-height: 46px;
+  padding: 0 54px 0 40px;
+  font-size: 14px;
+
+  /* 覆盖 Element Plus 用变量绘制的背景，hover 同样显式声明 */
+  &:hover,
+  &:focus {
+    background:
+      $tech-fill-hover padding-box,
+      $tech-border border-box;
+    color: #fff;
+    border-color: transparent;
+  }
+
+  &:active {
+    background:
+      $tech-fill-hover padding-box,
+      $tech-border border-box;
+    color: #fff;
+    border-color: transparent;
+  }
+}
+
+/* 小号：紧凑版，去掉指示点与图标区，避免工具栏/表格里过重 */
+.el-button--primary.el-button--small:where(:not(.is-link, .is-text, .is-plain)) {
+  min-height: 36px;
+  height: 36px;
+  padding: 0 18px;
+  font-size: 13px;
+  border-width: 1.4px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.22), 0 0 12px rgba(139, 92, 246, 0.14);
+
+  &::before,
+  &::after {
+    display: none;
+  }
+
+  > span::after {
+    content: none;
+  }
+
+  &:hover:not(:disabled):not(.is-disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.34), 0 0 18px rgba(168, 85, 247, 0.28);
+  }
+}
+
+/* 大号 */
+.el-button--primary.el-button--large:where(:not(.is-link, .is-text, .is-plain)) {
+  min-height: 48px;
+  height: 48px;
+  padding: 0 58px 0 44px;
+  font-size: 15px;
+
+  &::before {
+    left: 21px;
+  }
+
+  &::after {
+    width: 32px;
+    height: 32px;
+    margin-top: -16px;
+  }
+}
+
+/* 弹窗内的确认按钮：保留渐变描边与玻璃底，去掉装饰避免拥挤 */
+.el-dialog .el-button--primary:where(:not(.is-link, .is-text, .is-plain)),
+.el-drawer .el-button--primary:where(:not(.is-link, .is-text, .is-plain)),
+.el-message-box .el-button--primary:where(:not(.is-link, .is-text, .is-plain)) {
+  min-height: 38px;
+  height: 38px;
+  padding: 0 22px;
+  font-size: 14px;
+
+  &::before,
+  &::after {
+    display: none;
+  }
+
+  > span::after {
+    content: none;
+  }
+}
+
+/* ============================================================
+   自定义原生按钮
+   ============================================================ */
+
+/* 主站各处的主 CTA（首页、文章页、搜索页等） */
+.btn-primary {
+  @extend %tech-primary;
+  height: 46px;
+  padding: 0 54px 0 40px;
+  font-size: 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  box-sizing: border-box;
+
+  &.btn-full {
+    width: 100%;
+  }
+}
+
+/* 次操作：深色玻璃 + 中性描边（浏览精选、申请认证等） */
+.btn-secondary {
+  height: 46px;
+  padding: 0 30px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.36);
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.62) 0%, rgba(15, 23, 42, 0.7) 100%);
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  text-decoration: none;
+  box-sizing: border-box;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.18);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease,
+    border-color 0.2s ease, color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: rgba(147, 197, 253, 0.55);
+    color: #fff;
+    background: linear-gradient(180deg, rgba(38, 52, 79, 0.72) 0%, rgba(19, 29, 50, 0.78) 100%);
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.24);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  &.btn-sm {
+    height: 36px;
+    padding: 0 18px;
+    font-size: 13px;
+  }
+
+  &.btn-full {
+    width: 100%;
+  }
+}
+
+.btn-glow {
+  @extend %tech-primary;
+  width: 100%;
+  height: 48px;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+
+  .btn-text {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 保留原有扫光，但收敛为轻微流光 */
+  .btn-shine {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      110deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.14) 48%,
+      transparent 62%
+    );
+    background-size: 220% 100%;
+    animation: btnShine 4.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+}
+
+@keyframes btnShine {
+  0% {
+    background-position: 180% 0;
+  }
+  100% {
+    background-position: -60% 0;
+  }
+}

@@ -1,0 +1,1 @@
+import{I as s}from"./index-DwZhLOow.js";const e=(a,n,o={})=>s.confirm(a,n,{confirmButtonText:"确定",cancelButtonText:"取消",...o,customClass:["admin-dialog","admin-messagebox",o.customClass].filter(Boolean).join(" ")});export{e as a};

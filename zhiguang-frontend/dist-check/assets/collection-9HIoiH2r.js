@@ -1,0 +1,1 @@
+import{x as e}from"./index-BgeKvwcP.js";const c=t=>e({url:`/api/collections/${t}`,method:"get"}),a=(t,o=0,l=20)=>e({url:`/api/collections/${t}/articles`,method:"get",params:{page:o,size:l}}),i=(t=0,o=20)=>e({url:"/api/collections",method:"get",params:{page:t,size:o}});export{c as a,a as b,i as g};

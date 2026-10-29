@@ -1,0 +1,167 @@
+groups:
+  - name: zhiguang_alerts
+    rules:
+      # JVM 堆内存告警
+      - alert: JVMHeapMemoryHigh
+        expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: zhiguang-backend
+        annotations:
+          summary: "JVM 堆内存使用率过高"
+          description: "JVM 堆内存使用率超过 80%，当前值: {{ $value }}"
+
+      # JVM 堆内存严重告警
+      - alert: JVMHeapMemoryCritical
+        expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.9
+        for: 3m
+        labels:
+          severity: critical
+          service: zhiguang-backend
+        annotations:
+          summary: "JVM 堆内存使用率严重过高"
+          description: "JVM 堆内存使用率超过 90%，当前值: {{ $value }}，可能导致 OOM"
+
+      # HTTP 错误率告警
+      - alert: HighErrorRate
+        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / sum(rate(http_server_requests_seconds_count[5m])) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+          service: zhiguang-backend
+        annotations:
+          summary: "HTTP 错误率过高"
+          description: "HTTP 5xx 错误率超过 1%，当前值: {{ $value }}"
+
+      # HTTP 错误率严重告警
+      - alert: CriticalErrorRate
+        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / sum(rate(http_server_requests_seconds_count[5m])) > 0.05
+        for: 3m
+        labels:
+          severity: critical
+          service: zhiguang-backend
+        annotations:
+          summary: "HTTP 错误率严重过高"
+          description: "HTTP 5xx 错误率超过 5%，当前值: {{ $value }}，系统可能崩溃"
+
+      # API P99 延迟告警
+      - alert: HighLatencyP99
+        expr: histogram_quantile(0.99, rate(http_server_requests_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: zhiguang-backend
+        annotations:
+          summary: "API P99 延迟过高"
+          description: "API P99 延迟超过 500ms，当前值: {{ $value }}s"
+
+      # API P99 延迟严重告警
+      - alert: CriticalLatencyP99
+        expr: histogram_quantile(0.99, rate(http_server_requests_seconds_bucket[5m])) > 1.0
+        for: 3m
+        labels:
+          severity: critical
+          service: zhiguang-backend
+        annotations:
+          summary: "API P99 延迟严重过高"
+          description: "API P99 延迟超过 1s，当前值: {{ $value }}s，用户体验严重受损"
+
+      # MySQL 连接池告警
+      - alert: MySQLConnectionPoolHigh
+        expr: hikaricp_connections_active / hikaricp_connections_max > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: zhiguang-backend
+        annotations:
+          summary: "MySQL 连接池使用率过高"
+          description: "MySQL 连接池使用率超过 80%，当前值: {{ $value }}，可能耗尽"
+
+      # Redis 内存告警
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis 内存使用率过高"
+          description: "Redis 内存使用率超过 80%，当前值: {{ $value }}"
+
+      # RabbitMQ 队列堆积告警
+      - alert: RabbitMQQueueBacklog
+        expr: rabbitmq_queue_messages > 10000
+        for: 5m
+        labels:
+          severity: warning
+          service: rabbitmq
+        annotations:
+          summary: "RabbitMQ 队列堆积严重"
+          description: "RabbitMQ 队列消息数超过 10000，当前值: {{ $value }}，需排查消费者"
+
+      # AI 接口失败率告警
+      - alert: AIServiceHighFailureRate
+        expr: sum(rate(http_server_requests_seconds_count{uri=~"/api/ai.*",status=~"5.."}[5m])) / sum(rate(http_server_requests_seconds_count{uri=~"/api/ai.*"}[5m])) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+          service: zhiguang-backend
+        annotations:
+          summary: "AI 接口失败率过高"
+          description: "AI 接口失败率超过 20%，当前值: {{ $value }}，需触发熔断"
+
+      # Elasticsearch 集群状态告警
+      - alert: ElasticsearchClusterStatusRed
+        expr: elasticsearch_cluster_health_status{color="red"} == 1
+        for: 3m
+        labels:
+          severity: critical
+          service: elasticsearch
+        annotations:
+          summary: "Elasticsearch 集群状态为红色"
+          description: "Elasticsearch 集群状态为红色，分片未分配，需立即处理"
+
+      # Elasticsearch 集群状态黄色告警
+      - alert: ElasticsearchClusterStatusYellow
+        expr: elasticsearch_cluster_health_status{color="yellow"} == 1
+        for: 5m
+        labels:
+          severity: warning
+          service: elasticsearch
+        annotations:
+          summary: "Elasticsearch 集群状态为黄色"
+          description: "Elasticsearch 集群状态为黄色，部分分片副本未分配"
+
+      # PostgreSQL 连接数告警
+      - alert: PostgreSQLConnectionHigh
+        expr: pg_stat_activity_count > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: postgres-vector
+        annotations:
+          summary: "PostgreSQL 连接数过高"
+          description: "PostgreSQL 连接数超过 80，当前值: {{ $value }}，可能耗尽"
+
+      # 系统磁盘空间告警
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "系统磁盘空间不足"
+          description: "系统磁盘剩余空间低于 10%，当前值: {{ $value }}"
+
+      # 系统 CPU 使用率告警
+      - alert: CPUUsageHigh
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "CPU 使用率过高"
+          description: "CPU 使用率超过 80%，当前值: {{ $value }}%"

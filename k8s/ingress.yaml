@@ -1,0 +1,150 @@
+# ================================================
+# 主 Ingress：常规流量（60s 超时足够）
+# 修复记录（2026-10-24，INFRA-P2-1）：
+#   1. 移除 rewrite-target: / —— 此前会把所有路径改写为 /，
+#      导致 /api 分流路由实际失效；
+#   2. 移除 /minio 公网路由 —— MinIO API 不应对外发布（SEC-P1-6），
+#      内部访问走集群 Service；
+#   3. 补充安全响应头注解（原仅 nginx.conf 有，k8s 路径不生效）。
+# ================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: zhiguang-ingress
+  namespace: zhiguang
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    # 安全响应头（与独立部署 nginx/nginx.conf 对齐）
+    nginx.ingress.kubernetes.io/force-hsts: "true"
+    nginx.ingress.kubernetes.io/hsts-max-age: "63072000"
+    nginx.ingress.kubernetes.io/hsts-include-subdomains: "true"
+    nginx.ingress.kubernetes.io/custom-frame-options-value: "SAMEORIGIN"
+    nginx.ingress.kubernetes.io/custom-response-headers: "X-Content-Type-Options: nosniff; Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' wss: https:; media-src 'self' blob:; object-src 'none'; frame-ancestors 'self';"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - zhiguang.com
+    - api.zhiguang.com
+    secretName: tls-certificates
+  rules:
+  - host: zhiguang.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+  - host: api.zhiguang.com
+    http:
+      paths:
+      # AI 服务路由
+      - path: /api/ai
+        pathType: Prefix
+        backend:
+          service:
+            name: ai-service
+            port:
+              number: 8080
+
+      # 搜索服务路由
+      - path: /api/search
+        pathType: Prefix
+        backend:
+          service:
+            name: search-service
+            port:
+              number: 8080
+
+      # 通知服务路由
+      - path: /api/notifications
+        pathType: Prefix
+        backend:
+          service:
+            name: notification-service
+            port:
+              number: 8080
+
+      # 文件服务路由
+      - path: /api/files
+        pathType: Prefix
+        backend:
+          service:
+            name: file-service
+            port:
+              number: 8080
+
+      # 核心服务路由（默认）
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 8080
+
+      # 媒体文件路由
+      - path: /uploads
+        pathType: Prefix
+        backend:
+          service:
+            name: file-service
+            port:
+              number: 8080
+---
+# ================================================
+# SSE 专用 Ingress：通知流/私信流/AI 流式润色为长连接，
+# 主 Ingress 的 60s read-timeout 会掐断它们，这里单独放行 24h。
+# 规则完全相同的主机名 + 更具体的 path（stream），nginx-ingress
+# 按最长 path 优先匹配。
+# ================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: zhiguang-ingress-sse
+  namespace: zhiguang
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - api.zhiguang.com
+    secretName: tls-certificates
+  rules:
+  - host: api.zhiguang.com
+    http:
+      paths:
+      - path: /api/notifications/stream
+        pathType: Prefix
+        backend:
+          service:
+            name: notification-service
+            port:
+              number: 8080
+      - path: /api/messages/stream
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 8080
+      - path: /api/ai/polish/stream
+        pathType: Prefix
+        backend:
+          service:
+            name: ai-service
+            port:
+              number: 8080

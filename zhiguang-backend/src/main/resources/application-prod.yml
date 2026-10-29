@@ -1,0 +1,10 @@
+# 生产 profile 覆盖配置（SPRING_PROFILES_ACTIVE=prod 时生效）
+# 本地开发默认走 application.yml（DEBUG 日志便于排查）。
+logging:
+  level:
+    root: INFO
+    # 生产收敛为 INFO：DEBUG 级会记录认证失败细节、搜索关键词等内容，配合日志采集易成二次泄露源（SEC-P2-4）
+    com.zhiguang: INFO
+  # TODO: 接入集中式日志时按需开启
+  # file:
+  #   name: /var/log/zhiguang/app.log

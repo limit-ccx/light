@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>纸域空间 - 知识分享社区</title>
+  <link rel="icon" type="image/png" href="/brand/logo-light.png" id="app-favicon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;500;600;700&family=ZCOOL+XiaoWei&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* JS 加载前的启动遮罩：避免深色入场动画前闪白屏 */
+    #boot-curtain {
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 42%, #101a2e 0%, #080d18 55%, #04060c 100%);
+      transition: opacity 0.45s ease;
+      animation: boot-curtain-fallback 0.01s linear 12s forwards;
+    }
+    #boot-curtain.is-hidden {
+      opacity: 0;
+    }
+    @keyframes boot-curtain-fallback {
+      to { opacity: 0; visibility: hidden; }
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-Cw7h1nmp.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DxmizuoM.css">
+<link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
+<body>
+  <div id="boot-curtain" aria-hidden="true"></div>
+  <script>
+    /* 启动帘配色跟随主题与目标页面：
+       深色主题、或首页深色入场动画即将播放时保留深色帘；
+       其余场景（含亮色后台）换成浅色帘，避免刷新时"黑一下" */
+    (function () {
+      var path = (location.pathname || '/').replace(/\/+$/, '') || '/'
+      var theme = null
+      try { theme = localStorage.getItem('theme') } catch (e) {}
+      if (!theme) {
+        theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      var introPlaying = path === '/' && !reduced &&
+        (new URLSearchParams(location.search).get('intro') === '1' ||
+          !localStorage.getItem('light-note:intro-seen-v1'))
+      if (theme === 'dark' || introPlaying) return
+      var curtain = document.getElementById('boot-curtain')
+      if (!curtain) return
+      curtain.style.background = path.indexOf('/admin') === 0
+        ? 'radial-gradient(circle at 50% 42%, #f8fbfe 0%, #eef4fb 55%, #e4edf7 100%)'
+        : 'radial-gradient(circle at 50% 42%, #ffffff 0%, #f7f9fc 55%, #eef1f6 100%)'
+    })()
+  </script>
+  <div id="app"></div>
+</body>
+</html>

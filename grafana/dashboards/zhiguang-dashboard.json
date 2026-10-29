@@ -1,0 +1,194 @@
+{
+  "dashboard": {
+    "title": "纸域空间平台监控仪表盘",
+    "uid": "zhiguang-dashboard",
+    "editable": true,
+    "panels": [
+      {
+        "title": "JVM 堆内存使用",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "jvm_memory_used_bytes{area='heap'}",
+            "legendFormat": "已使用",
+            "refId": "A"
+          },
+          {
+            "expr": "jvm_memory_max_bytes{area='heap'}",
+            "legendFormat": "最大值",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "bytes", "label": "内存"}
+        ]
+      },
+      {
+        "title": "HTTP QPS",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(http_server_requests_seconds_count[5m]))",
+            "legendFormat": "QPS",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "请求/秒"}
+        ]
+      },
+      {
+        "title": "HTTP 响应时间 (P99)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.99, rate(http_server_requests_seconds_bucket[5m]))",
+            "legendFormat": "P99",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket[5m]))",
+            "legendFormat": "P95",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(http_server_requests_seconds_bucket[5m]))",
+            "legendFormat": "P50",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "响应时间"}
+        ]
+      },
+      {
+        "title": "HTTP 错误率",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(http_server_requests_seconds_count{status=~'5..'}[5m])) / sum(rate(http_server_requests_seconds_count[5m]))",
+            "legendFormat": "5xx 错误率",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(rate(http_server_requests_seconds_count{status=~'4..'}[5m])) / sum(rate(http_server_requests_seconds_count[5m]))",
+            "legendFormat": "4xx 错误率",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "percentunit", "label": "错误率"}
+        ]
+      },
+      {
+        "title": "MySQL 连接池",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "hikaricp_connections_active",
+            "legendFormat": "活跃连接",
+            "refId": "A"
+          },
+          {
+            "expr": "hikaricp_connections_idle",
+            "legendFormat": "空闲连接",
+            "refId": "B"
+          },
+          {
+            "expr": "hikaricp_connections_max",
+            "legendFormat": "最大连接",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "连接数"}
+        ]
+      },
+      {
+        "title": "Redis 内存",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 16, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "redis_memory_used_bytes",
+            "legendFormat": "已使用",
+            "refId": "A"
+          },
+          {
+            "expr": "redis_memory_max_bytes",
+            "legendFormat": "最大值",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "bytes", "label": "内存"}
+        ]
+      },
+      {
+        "title": "RabbitMQ 队列消息数",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 24, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "rabbitmq_queue_messages",
+            "legendFormat": "{{queue}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "消息数"}
+        ]
+      },
+      {
+        "title": "Elasticsearch 索引大小",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 24, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "elasticsearch_indices_store_size_bytes_total",
+            "legendFormat": "{{index}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "bytes", "label": "索引大小"}
+        ]
+      },
+      {
+        "title": "系统 CPU 使用率",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 32, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "100 - (avg by(instance) (irate(node_cpu_seconds_total{mode='idle'}[5m])) * 100)",
+            "legendFormat": "{{instance}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "CPU %"}
+        ]
+      },
+      {
+        "title": "系统内存使用率",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 32, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100",
+            "legendFormat": "{{instance}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "内存 %"}
+        ]
+      }
+    ]
+  }
+}

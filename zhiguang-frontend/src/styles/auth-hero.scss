@@ -1,0 +1,421 @@
+/* ============================================================
+   登录 / 注册左侧看板娘立绘面板
+   被 views/Login.vue 与 views/Register.vue 的 scoped style 引用，
+   所有类名统一以 auth-hero / hero- 前缀，避免全局污染。
+   ============================================================ */
+
+.auth-hero {
+  position: relative;
+  width: min(480px, 72vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  perspective: 1100px;
+}
+
+.hero-glow {
+  position: absolute;
+  inset: 4% -8% 12%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgba(196, 162, 255, 0.45),
+    rgba(244, 164, 214, 0.24),
+    transparent 78%
+  );
+  filter: blur(46px);
+  transform: translate3d(calc(var(--px, 0px) * -0.45), calc(var(--py, 0px) * -0.45), 0);
+  animation: heroGlowPulse 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.hero-star {
+  position: absolute;
+  background: linear-gradient(180deg, #ffffff, rgba(214, 190, 255, 0.75));
+  clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+  translate: calc(var(--px, 0px) * 0.9) calc(var(--py, 0px) * 0.9);
+  animation: heroTwinkle 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* 沿卡片四周上升的星尘 */
+.hero-mote {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff, rgba(196, 162, 255, 0.9) 42%, transparent 74%);
+  translate: calc(var(--px, 0px) * 0.6) calc(var(--py, 0px) * 0.6);
+  animation: heroMoteRise 5.6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.hero-stage {
+  position: relative;
+  width: 100%;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg))
+    translate3d(var(--px, 0px), var(--py, 0px), 0);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero-card {
+  position: relative;
+  width: 100%;
+  animation: heroFloat 6.5s ease-in-out infinite;
+}
+
+/* ===== 旋转描边光 ===== */
+.hero-rim,
+.hero-rim-halo {
+  position: absolute;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero-rim {
+  inset: -2px;
+  border-radius: 28px;
+}
+
+.hero-rim-halo {
+  inset: -16px;
+  border-radius: 38px;
+  filter: blur(20px);
+  opacity: 0.6;
+}
+
+.hero-rim-sweep {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 240%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(167, 139, 250, 0.12) 0deg,
+    rgba(96, 165, 250, 0.95) 46deg,
+    rgba(244, 114, 182, 1) 92deg,
+    rgba(167, 139, 250, 0.12) 158deg,
+    rgba(56, 189, 248, 0.9) 226deg,
+    rgba(167, 139, 250, 0.12) 312deg,
+    rgba(167, 139, 250, 0.12) 360deg
+  );
+  animation: heroRimSpin 7s linear infinite;
+}
+
+.hero-frame {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  border-radius: 26px;
+  overflow: hidden;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(236, 229, 255, 0.62));
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow:
+    0 34px 72px rgba(118, 82, 188, 0.26),
+    inset 1px 1px rgba(255, 255, 255, 0.8),
+    inset -1px -1px rgba(255, 255, 255, 0.18);
+  transition: filter 0.45s ease, transform 0.45s ease;
+}
+
+.hero-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.hero-bezel {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow: inset 0 0 46px rgba(167, 139, 250, 0.2);
+  pointer-events: none;
+}
+
+.hero-sheen {
+  position: absolute;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background: linear-gradient(
+    115deg,
+    transparent 42%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 58%
+  );
+  animation: heroSheen 7.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ===== 四角括号标记 ===== */
+.hero-corner {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  z-index: 3;
+  border: 2px solid rgba(150, 112, 235, 0.72);
+  filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.55));
+  animation: heroCorner 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.hero-corner.tl {
+  top: -12px;
+  left: -12px;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 9px 0 0 0;
+}
+
+.hero-corner.tr {
+  top: -12px;
+  right: -12px;
+  border-left: 0;
+  border-bottom: 0;
+  border-radius: 0 9px 0 0;
+  animation-delay: 0.85s;
+}
+
+.hero-corner.bl {
+  bottom: -12px;
+  left: -12px;
+  border-right: 0;
+  border-top: 0;
+  border-radius: 0 0 0 9px;
+  animation-delay: 1.7s;
+}
+
+.hero-corner.br {
+  bottom: -12px;
+  right: -12px;
+  border-left: 0;
+  border-top: 0;
+  border-radius: 0 0 9px 0;
+  animation-delay: 2.55s;
+}
+
+/* ===== 卡片与倒影接缝处的底座光带 ===== */
+.hero-base {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  bottom: -3px;
+  height: 3px;
+  z-index: 3;
+  border-radius: 50%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(214, 190, 255, 0.9) 22%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(167, 139, 250, 0.85) 78%,
+    transparent
+  );
+  box-shadow: 0 0 20px rgba(167, 139, 250, 0.8);
+  animation: heroBase 4.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* 镜面倒影：翻转盒子里把立绘底部贴到接缝处 */
+.hero-reflection {
+  height: 104px;
+  margin-top: 3px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.34), transparent 84%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.34), transparent 84%);
+  filter: saturate(0.82) blur(1.5px);
+  pointer-events: none;
+}
+
+.hero-mirror {
+  position: relative;
+  height: 100%;
+  transform: scaleY(-1);
+
+  img {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+}
+
+.hero-greeting {
+  position: absolute;
+  top: 4%;
+  right: -4%;
+  z-index: 4;
+  min-width: 186px;
+  padding: 15px 20px;
+  border-radius: 22px 22px 22px 6px;
+  color: var(--color-text);
+  animation: heroGreetPop 3.4s ease-in-out infinite;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 20px;
+    bottom: -10px;
+    width: 18px;
+    height: 18px;
+    background: inherit;
+    border-right: 1px solid rgba(255, 255, 255, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    transform: rotate(45deg);
+  }
+}
+
+.greeting-line {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  background: linear-gradient(135deg, var(--color-ai-purple), var(--color-ai-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.greeting-subline {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* 输入密码时立绘「闭眼」：虚化 + 微微后缩 */
+.auth-hero.is-shy {
+  .hero-frame {
+    filter: blur(7px) saturate(0.72) brightness(1.04);
+    transform: scale(0.985);
+  }
+
+  .hero-rim-halo {
+    opacity: 0.28;
+  }
+
+  .hero-reflection {
+    opacity: 0.45;
+  }
+
+  .hero-star,
+  .hero-mote {
+    animation-play-state: paused;
+    opacity: 0.3;
+  }
+}
+
+/* ===== 动效关键帧 ===== */
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes heroRimSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes heroTwinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.72) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.15) rotate(45deg); }
+}
+
+@keyframes heroMoteRise {
+  0% { opacity: 0; transform: translateY(14px) scale(0.6); }
+  22% { opacity: 1; }
+  78% { opacity: 0.85; }
+  100% { opacity: 0; transform: translateY(-96px) scale(1.1); }
+}
+
+@keyframes heroCorner {
+  0%, 100% { opacity: 0.35; transform: scale(0.9); }
+  45% { opacity: 1; transform: scale(1.06); }
+}
+
+@keyframes heroBase {
+  0%, 100% { opacity: 0.5; transform: scaleX(0.82); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+
+@keyframes heroGlowPulse {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+@keyframes heroSheen {
+  0%, 100% { transform: translateX(-14%) rotate(0deg); opacity: 0.5; }
+  50% { transform: translateX(14%) rotate(0deg); opacity: 1; }
+}
+
+@keyframes heroGreetPop {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-8px) scale(1.04); }
+}
+
+/* ===== 暗色模式 ===== */
+[data-theme='dark'] {
+  .hero-frame {
+    background: linear-gradient(160deg, rgba(46, 40, 68, 0.9), rgba(26, 24, 42, 0.62));
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow:
+      0 34px 72px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+
+  .hero-glow {
+    background: radial-gradient(
+      closest-side,
+      rgba(150, 106, 255, 0.5),
+      rgba(96, 158, 235, 0.26),
+      transparent 78%
+    );
+  }
+
+  .hero-reflection {
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent 84%);
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent 84%);
+  }
+
+  .hero-rim-halo {
+    opacity: 0.78;
+  }
+
+  .hero-corner {
+    border-color: rgba(190, 165, 255, 0.9);
+    filter: drop-shadow(0 0 9px rgba(167, 139, 250, 0.85));
+  }
+
+  .hero-base {
+    box-shadow: 0 0 28px rgba(167, 139, 250, 0.95);
+  }
+}
+
+/* ===== 减少动效偏好 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .hero-card,
+  .hero-star,
+  .hero-mote,
+  .hero-glow,
+  .hero-sheen,
+  .hero-greeting,
+  .hero-rim-sweep,
+  .hero-corner,
+  .hero-base {
+    animation: none;
+  }
+
+  .hero-stage {
+    transition: none;
+  }
+}

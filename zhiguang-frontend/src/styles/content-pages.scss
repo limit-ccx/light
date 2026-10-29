@@ -1,0 +1,144 @@
+/* ===== 全站内容页公用外观（使用 --content-* 令牌） ===== */
+
+.ln-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  isolation: isolate;
+}
+
+.ln-page::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 520px;
+  background:
+    radial-gradient(60% 80% at 12% 0%, var(--content-glow-a), transparent 70%),
+    radial-gradient(50% 70% at 88% 10%, var(--content-glow-b), transparent 72%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.ln-main {
+  position: relative;
+  flex: 1;
+  padding: calc(var(--header-height) + 36px) 0 72px;
+}
+
+.ln-body {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.ln-panel {
+  background: var(--content-surface);
+  border: 1px solid var(--content-line);
+  border-radius: 24px;
+  box-shadow: var(--content-shadow);
+}
+
+.ln-panel-pad {
+  padding: clamp(24px, 4vw, 44px);
+}
+
+.ln-narrow {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.ln-section-title {
+  margin: 0 0 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--content-line);
+  color: var(--content-ink);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.ln-prose {
+  color: var(--content-ink-2);
+  font-size: 15px;
+  line-height: 1.9;
+
+  h2 {
+    margin: 36px 0 14px;
+    color: var(--content-ink);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  h3 {
+    margin: 28px 0 10px;
+    color: var(--content-ink);
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0 0 14px;
+  }
+
+  ul,
+  ol {
+    margin: 0 0 16px;
+    padding-left: 1.4em;
+  }
+
+  li {
+    margin-bottom: 8px;
+  }
+
+  strong {
+    color: var(--content-ink);
+    font-weight: 600;
+  }
+}
+
+.ln-link {
+  color: var(--color-primary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.ln-empty {
+  padding: 56px 24px;
+  text-align: center;
+  color: var(--content-ink-3);
+  font-size: 14px;
+}
+
+.ln-divider {
+  height: 1px;
+  background: var(--content-line);
+  border: none;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .ln-main {
+    padding: calc(var(--header-height) + 24px) 0 48px;
+  }
+
+  .ln-panel {
+    border-radius: 20px;
+  }
+
+  .ln-body {
+    margin-top: 20px;
+    gap: 18px;
+  }
+}

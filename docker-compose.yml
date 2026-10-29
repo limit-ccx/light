@@ -1,0 +1,229 @@
+version: '3.8'
+
+services:
+
+# 数据层/中间件端口仅绑定本机回环，避免弱口令服务暴露到宿主机网络；
+# 需要外部访问时用 SSH 隧道（Grafana/SkyWalking UI 等查看面保留发布）。
+  # MySQL 主库
+  mysql-master:
+    image: mysql:8.0
+    container_name: zhiguang-mysql-master
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-123456}
+      MYSQL_DATABASE: zhiguang
+      MYSQL_USER: zhiguang_write
+      MYSQL_PASSWORD: ${MYSQL_WRITE_PASSWORD:-write_password}
+    ports:
+      - "127.0.0.1:3308:3306"
+    volumes:
+      - light-note_mysql-data:/var/lib/mysql
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./sql/seed-data.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - ./sql/seed-data-admin.sql:/docker-entrypoint-initdb.d/03-admin.sql:ro
+      - ./sql/seed-data-test-100.sql:/docker-entrypoint-initdb.d/04-test.sql:ro
+    command: >
+      --server-id=1 --log-bin=mysql-bin --binlog-format=ROW
+      --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      --character-set-client-handshake=FALSE
+    networks:
+      - zhiguang-network
+
+  # MySQL 从库
+  mysql-replica:
+    image: mysql:8.0
+    container_name: zhiguang-mysql-replica
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: zhiguang
+      MYSQL_USER: zhiguang_read
+      MYSQL_PASSWORD: ${MYSQL_READ_PASSWORD:-read_password}
+    ports:
+      - "127.0.0.1:3309:3306"
+    volumes:
+      - mysql_replica_data:/var/lib/mysql
+    command: >
+      --server-id=2 --relay-log=relay-bin
+      --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      --character-set-client-handshake=FALSE
+    depends_on:
+      - mysql-master
+    networks:
+      - zhiguang-network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: zhiguang-redis
+    ports:
+      - "127.0.0.1:6380:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - zhiguang-network
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: zhiguang-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - zhiguang-network
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus
+    container_name: zhiguang-prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - prometheus_data:/prometheus
+    networks:
+      - zhiguang-network
+
+  # Alertmanager
+  alertmanager:
+    image: prom/alertmanager
+    container_name: zhiguang-alertmanager
+    ports:
+      - "127.0.0.1:9093:9093"
+    volumes:
+      - ./prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    networks:
+      - zhiguang-network
+
+  # Grafana
+  grafana:
+    image: grafana/grafana
+    container_name: zhiguang-grafana
+    ports:
+      - "13000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: grafana-clock-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+    networks:
+      - zhiguang-network
+
+  # SkyWalking OAP
+  skywalking-oap:
+    image: apache/skywalking-oap-server:9.2.0
+    container_name: zhiguang-skywalking-oap
+    ports:
+      - "11800:11800"
+      - "12800:12800"
+    environment:
+      SW_STORAGE: h2
+    networks:
+      - zhiguang-network
+
+  # SkyWalking UI
+  skywalking-ui:
+    image: apache/skywalking-ui:9.2.0
+    container_name: zhiguang-skywalking-ui
+    ports:
+      - "18080:8080"
+    environment:
+      SW_OAP_ADDRESS: http://skywalking-oap:12800
+    depends_on:
+      - skywalking-oap
+    networks:
+      - zhiguang-network
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: zhiguang-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "127.0.0.1:9200:9200"
+      - "127.0.0.1:9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - zhiguang-network
+
+  # PostgreSQL + pgvector
+  postgres-vector:
+    image: pgvector/pgvector:pg16
+    container_name: zhiguang-postgres-vector
+    environment:
+      POSTGRES_DB: zhiguang_vectors
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${VECTOR_POSTGRES_PASSWORD:-postgres123}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_vector_data:/var/lib/postgresql/data
+    networks:
+      - zhiguang-network
+
+  # MinIO 对象存储（通过宿主机 Windows 二进制运行，端口 9000/9001）
+  # 启动命令：d:\light-note\minio\minio.exe server d:\light-note\minio-data --console-address ":9001"
+
+  # Spring Boot 应用
+  app:
+    build:
+      context: ./zhiguang-backend
+      dockerfile: Dockerfile
+    container_name: zhiguang-app
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_EMBEDDING_API_KEY: ${AI_EMBEDDING_API_KEY:-}
+      AI_EMBEDDING_BASE_URL: ${AI_EMBEDDING_BASE_URL:-https://api.siliconflow.cn/v1}
+      AI_EMBEDDING_MODEL: ${AI_EMBEDDING_MODEL:-BAAI/bge-m3}
+      JWT_SECRET: ${JWT_SECRET:-ceBQEoN053/TEEyJP3CoaaIHg6AL8KTnqUc0yVtfaRY=}
+      MYSQL_USERNAME: ${MYSQL_USERNAME:-root}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-123456}
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      VECTOR_POSTGRES_PASSWORD: ${VECTOR_POSTGRES_PASSWORD:-postgres123}
+      MYSQL_MASTER_URL: jdbc:mysql://mysql-master:3306/zhiguang?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&connectionCollation=utf8mb4_unicode_ci
+      MYSQL_REPLICA_URL: jdbc:mysql://mysql-replica:3306/zhiguang?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&connectionCollation=utf8mb4_unicode_ci
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      ELASTICSEARCH_HOST: elasticsearch
+      VECTOR_POSTGRES_HOST: postgres-vector
+      MINIO_ENDPOINT: http://host.docker.internal:9000
+      SKYWALKING_COLLECTOR: skywalking-oap:11800
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysql-master
+      - mysql-replica
+      - redis
+      - rabbitmq
+      - elasticsearch
+      - postgres-vector
+    networks:
+      - zhiguang-network
+
+volumes:
+  light-note_mysql-data:
+    external: true
+  mysql_replica_data:
+  redis_data:
+  rabbitmq_data:
+  prometheus_data:
+  grafana_data:
+  elasticsearch_data:
+  postgres_vector_data:
+
+networks:
+  zhiguang-network:
+    driver: bridge

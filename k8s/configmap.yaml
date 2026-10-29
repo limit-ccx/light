@@ -1,0 +1,110 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: application-config
+  namespace: zhiguang
+data:
+  # 应用配置
+  SPRING_PROFILES_ACTIVE: "k8s"
+  
+  # Redis 配置
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  
+  # RabbitMQ 配置
+  RABBITMQ_HOST: "rabbitmq-service"
+  RABBITMQ_PORT: "5672"
+  
+  # Elasticsearch 配置
+  ELASTICSEARCH_HOST: "elasticsearch-service"
+  ELASTICSEARCH_PORT: "9200"
+  
+  # PostgreSQL 配置
+  POSTGRES_HOST: "postgres-vector-service"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DATABASE: "zhiguang_vectors"
+  
+  # MinIO 配置
+  MINIO_ENDPOINT: "http://minio-service:9000"
+  MINIO_BUCKET: "zhiguang-media"
+  
+  # MySQL 配置
+  MYSQL_MASTER_HOST: "mysql-master-service"
+  MYSQL_MASTER_PORT: "3306"
+  MYSQL_MASTER_DATABASE: "zhiguang_articles"
+  MYSQL_REPLICA_HOST: "mysql-replica-service"
+  MYSQL_REPLICA_PORT: "3306"
+  MYSQL_REPLICA_DATABASE: "zhiguang_articles"
+  
+  # 限流配置
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_DEFAULT_LIMIT: "100"
+  RATE_LIMIT_DEFAULT_WINDOW: "60"
+  
+  # SkyWalking 配置
+  SKYWALKING_AGENT_SERVICE_NAME: "zhiguang-backend"
+  SKYWALKING_COLLECTOR_BACKEND: "skywalking-oap-service:11800"
+  SKYWALKING_SAMPLING_RATE: "5000"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+    
+    scrape_configs:
+      - job_name: 'kubernetes-apiservers'
+        kubernetes_sd_configs:
+        - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+        - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+          action: keep
+          regex: default;kubernetes;https
+      
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+        - role: pod
+        relabel_configs:
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+          action: keep
+          regex: true
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+          action: replace
+          target_label: __metrics_path__
+          regex: (.+)
+        - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+          action: replace
+          regex: ([^:]+)(?::\d+)?;(\d+)
+          replacement: $1:$2
+          target_label: __address__
+        - action: labelmap
+          regex: __meta_kubernetes_pod_label_(.+)
+        - source_labels: [__meta_kubernetes_namespace]
+          action: replace
+          target_label: kubernetes_namespace
+        - source_labels: [__meta_kubernetes_pod_name]
+          action: replace
+          target_label: kubernetes_pod_name
+      
+      - job_name: 'zhiguang-services'
+        kubernetes_sd_configs:
+        - role: endpoints
+          namespaces:
+            names:
+            - zhiguang
+        relabel_configs:
+        - source_labels: [__meta_kubernetes_service_name]
+          action: keep
+          regex: ai-service|search-service|backend-service
+        - source_labels: [__meta_kubernetes_endpoint_port_name]
+          action: keep
+          regex: web

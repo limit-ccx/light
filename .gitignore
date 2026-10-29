@@ -1,0 +1,65 @@
+# ===== Node.js =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.vite/
+dist/
+
+# ===== Java / Maven =====
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+build.log
+backend.log
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== 环境 & 密钥 =====
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ===== Docker =====
+docker-compose.override.yml
+
+# ===== Trae / 工作区 =====
+.trae/
+.workbuddy/
+
+# ===== 数据库 =====
+*.db
+*.sqlite
+
+# ===== 临时文件 =====
+*.tmp
+*.bak
+*.swp
+*~
+build/
+
+# ===== 上传文件 =====
+zhiguang-backend/uploads/
+minio-data/
+
+# ===== 文档 & 工具产物 =====
+doc/
+hatch-pet-runs/

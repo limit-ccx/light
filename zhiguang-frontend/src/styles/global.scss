@@ -1,0 +1,249 @@
+@use './variables.scss' as *;
+
+/* ===== 按钮样式 ===== */
+.btn-primary {
+  @include button-base;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.2);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+  }
+}
+
+html {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+body {
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+input,
+textarea,
+select {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  input,
+  textarea,
+  select {
+    color-scheme: dark;
+  }
+}
+
+.btn-secondary {
+  @include button-base;
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-primary-light);
+    background: rgba(26, 115, 232, 0.03);
+    color: var(--color-primary);
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+}
+
+.btn-text {
+  @include button-base;
+  background: transparent;
+  color: var(--color-text-secondary);
+  height: auto;
+  padding: 8px 16px;
+
+  &:hover:not(:disabled) {
+    color: var(--color-primary);
+    background: rgba(26, 115, 232, 0.04);
+  }
+}
+
+.btn-danger {
+  @include button-base;
+  background: var(--color-google-red-light);
+  color: var(--color-google-red);
+  border: 1px solid transparent;
+
+  &:hover:not(:disabled) {
+    background: rgba(234, 67, 53, 0.15);
+    color: var(--color-google-red);
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+}
+
+/* ===== 输入框 ===== */
+.input-field {
+  @include input-base;
+  width: 100%;
+}
+
+/* ===== 容器 ===== */
+.container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 32px; /* 增加到 32px，保持充裕间距 */
+}
+
+/* ===== 卡片 ===== */
+.card {
+  @include card;
+  padding: 28px;
+}
+
+/* ===== 基础样式 ===== */
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--color-primary-light);
+  }
+}
+
+/* ===== Element Plus 主题覆盖 ===== */
+.el-dialog {
+  background: var(--color-card) !important;
+  border: 1px solid var(--color-card-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-lg) !important;
+
+  .el-dialog__header {
+    color: var(--color-text) !important;
+    border-bottom: 1px solid var(--color-divider) !important;
+    padding: 24px 28px !important;
+
+    .el-dialog__title {
+      font-weight: 500;
+      font-size: 18px;
+      font-family: var(--font-family);
+    }
+  }
+
+  .el-dialog__body {
+    color: var(--color-text-secondary) !important;
+    padding: 28px !important;
+    font-family: var(--font-family);
+  }
+
+  .el-dialog__footer {
+    border-top: 1px solid var(--color-divider) !important;
+    padding: 20px 28px !important;
+  }
+}
+
+.el-dropdown-menu {
+  background: var(--color-card) !important;
+  border: 1px solid var(--color-card-border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+  padding: 6px !important;
+
+  .el-dropdown-menu__item {
+    color: var(--color-text-secondary) !important;
+    border-radius: var(--radius-sm);
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    transition: all var(--transition-fast);
+    font-family: var(--font-family);
+
+    &:hover {
+      background: var(--color-google-blue-light) !important;
+      color: var(--color-primary) !important;
+    }
+  }
+}
+
+.el-message {
+  background: var(--color-card) !important;
+  border: 1px solid var(--color-card-border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-md) !important;
+  padding: 12px 20px !important;
+
+  .el-message__content {
+    color: var(--color-text) !important;
+    font-weight: 500;
+    font-size: 14px;
+    font-family: var(--font-family);
+  }
+}
+
+/* ===== 滚动条 ===== */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.22);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
+}
+
+/* 暗夜模式滚动条 */
+[data-theme="dark"] {
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.28);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  * {
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  }
+}
